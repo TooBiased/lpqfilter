@@ -1,0 +1,6 @@
+[submodule "misc/xxHash"]
+	path = misc/xxHash
+	url = https://github.com/Cyan4973/xxHash.git
+[submodule "misc/cqf"]
+	path = misc/cqf
+	url = https://github.com/splatlab/cqf.git
