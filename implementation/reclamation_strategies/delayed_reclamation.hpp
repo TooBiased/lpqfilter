@@ -3,7 +3,7 @@
 #include <atomic>
 #include <vector>
 
-#include "misc/concurrent_next/utils/mark_pointer.h"
+#include "utils/mark_pointer.h"
 
 namespace qf::delayed
 {

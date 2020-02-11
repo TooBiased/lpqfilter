@@ -1,0 +1,34 @@
+* This is the initial commit
+
+** What's still coming
+- apparently there is a linker error, that happens when compiling the
+  counting qfilter tests
+- we will add the scripts used for testing/creating the plots in our
+  paper
+- some more cleanup of the benchmark code (only readability)
+- some more cleanup involving the utils folder
+- some examples, of how to use the data structures
+
+** What's already here
+- there are three variants of our data structures (described [[https://arxiv.org/abs/1911.08374][here]])
+  - once as described in the paper
+  - once basically the same but with a templated number of remainder
+    bits (this might be faster when the necessary false positive rate
+    is known at compile time)
+  - once without the grouped remainders described in the paper
+
+- some benchmarks used to create the plots in the paper
+
+** How to use what's there
+#+BEGIN_SRC bash
+  mkdir build
+  cd build
+  cmake ..
+  make
+#+END_SRC
+
+- Currently there seems to be a linking error connected to the cqf
+  implementation
+- Our implementation might need a compiler greater than gcc 7.4.0 we
+  have had some problems with an internal compiler bug at version
+  7.4.0
