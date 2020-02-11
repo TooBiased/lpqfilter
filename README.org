@@ -1,8 +1,6 @@
 * This is the initial commit
 
 ** What's still coming
-- apparently there is a linker error, that happens when compiling the
-  counting qfilter tests
 - we will add the scripts used for testing/creating the plots in our
   paper
 - some more cleanup of the benchmark code (only readability)
@@ -27,8 +25,6 @@
   make
 #+END_SRC
 
-- Currently there seems to be a linking error connected to the cqf
-  implementation
 - Our implementation might need a compiler greater than gcc 7.4.0 we
   have had some problems with an internal compiler bug at version
   7.4.0

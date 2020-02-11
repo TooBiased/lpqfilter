@@ -54,6 +54,7 @@ set(cqf_sources_basic
   misc/cqf/src/gqf.c
   misc/cqf/src/gqf_file.c
   misc/cqf/src/hashutil.c
+  misc/cqf/src/partitioned_counter.c
   )
 
 set(cqf_sources_fill
@@ -61,6 +62,7 @@ set(cqf_sources_fill
   misc/cqf/src/gqf.c
   misc/cqf/src/gqf_file.c
   misc/cqf/src/hashutil.c
+  misc/cqf/src/partitioned_counter.c
 )
 
 function( FilterTest variant sources name )
