@@ -4,3 +4,6 @@
 [submodule "misc/cqf"]
 	path = misc/cqf
 	url = https://github.com/splatlab/cqf.git
+[submodule "utils"]
+	path = utils
+	url = https://github.com/TooBiased/utils_tm.git
