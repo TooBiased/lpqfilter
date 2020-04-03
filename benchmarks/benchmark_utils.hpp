@@ -1,7 +1,19 @@
 #pragma once
+/*******************************************************************************
+ * benchmarks/benchmark_utils.cpp
+ *
+ * This file contains the base configuration of all benchmarks
+ * + some common functions
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
 
-#include "utils/utilities.h"
-#include "utils/commandline.h"
+#include "implementation/utilities.hpp"
+#include "utils/command_line_parser.hpp"
 
 struct benchmark_config
 {
@@ -37,11 +49,6 @@ struct basic_benchmark_config : public benchmark_config
 		set_fp_rate(fp_rate_percent / 100);
 	}
 };
-
-// struct mixed_benchmark_config : public basic_benchmark_config
-// {
-// 	size_t contains_ratio = 2;
-// };
 
 struct fill_benchmark_config : public basic_benchmark_config
 {
@@ -92,40 +99,3 @@ FilterType construct_quotient_filter(const basic_benchmark_config& config)
 {
 	return construct_quotient_filter<FilterType>(config.bits, config.cap, config.min_cap, config.fp_rate);
 }
-
-
-
-
-
-
-
-// template <class key_type, size_t... Bits, class Functor>
-// void run_test_compact_qf_helper(size_t remainder_bits, Functor&& func, std::index_sequence<Bits...>)
-// {
-// 	((remainder_bits == Bits && (
-// 		func(QF_type<key_type, Bits>{}),
-// 		true)) || ...);
-// }
-
-// template<size_t First, size_t... Bits>
-// std::index_sequence<Bits...> remove_first(std::index_sequence<First, Bits...>)
-// {
-// 	return {};
-// };
-
-// template<class key_type, class Functor>
-// void run_test_compact_qf(size_t remainder_bits, Functor&& func)
-// {
-// 	if constexpr (QF_concurrency_variant == QF_concurrency_type::linear_probing)
-// 	{
-// 		run_test_compact_qf_helper<key_type>(remainder_bits,
-//                                              std::forward<Functor>(func),
-//                                              remove_first(qf::REMAINDER_SEQUENCE));
-// 	}
-// 	else
-// 	{
-// 		run_test_compact_qf_helper<key_type>(remainder_bits,
-//                                              std::forward<Functor>(func),
-//                                              qf::REMAINDER_SEQUENCE);
-// 	}
-// }

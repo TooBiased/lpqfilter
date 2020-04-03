@@ -1,6 +1,24 @@
-#include "utils/quotient_filter_type_traits.h"
-#include "utils/utilities.h"
-#include "utils/definitions.h"
+#pragma once
+/*******************************************************************************
+ * implementation/base_filter/cqf_wrapper.hpp
+ *
+ * this is a wrapper for the counting quotient filter positioned in misc/cqf/...
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
+#include "utils/default_hash.hpp"
+namespace htm = utils_tm::hash_tm;
+
+#include "implementation/handle_wrapper.hpp"
+#include "implementation/utilities.hpp"
+#include "implementation/definitions.hpp"
 
 extern "C"
 {
@@ -9,7 +27,7 @@ extern "C"
 #include "misc/cqf/include/gqf_file.h"
 }
 
-template <class K, size_t Remainder, class HF = qf::default_hash>
+template <class K, size_t Remainder, class HF = htm::default_hash>
 class cqf_wrapper
 {
 private:

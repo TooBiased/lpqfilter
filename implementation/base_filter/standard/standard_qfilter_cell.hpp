@@ -1,4 +1,19 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/standard/standard_qfilter_cell.hpp
+ *
+ * slot implementation for the quotient filter variant with grouped slots
+ * (multiple slots per atomic non-templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
 #include <cstddef>
 #include <atomic>
 #include <utility>

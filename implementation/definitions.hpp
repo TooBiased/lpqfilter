@@ -1,4 +1,17 @@
 #pragma once
+/*******************************************************************************
+ * implementation/definitions.hpp
+ *
+ * This file holds some of the standard definitions of our quotient
+ * filter classes.
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
 
 #include <cstdint>
 #include <cstddef>

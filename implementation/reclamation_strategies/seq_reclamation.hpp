@@ -1,4 +1,19 @@
 #pragma once
+/*******************************************************************************
+ * implementation/reclamation_strategies/sequential_reclamation.hpp
+ *
+ * this reclamation strategy works only in sequential scenarios, every
+ * pointer is removed immediately.  This could lead to problems in
+ * concurrent scenarios.
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <vector>
 

@@ -1,4 +1,18 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/standard/standard_lpfilter_cell.hpp
+ *
+ * grouped slot implementation for the linear probing filter
+ * (grouped non-templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 #include <atomic>
 #include "standard_qfilter_cell.hpp"
 

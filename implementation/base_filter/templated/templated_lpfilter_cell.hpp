@@ -1,4 +1,19 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/templated/templated_lpfilter_cell.hpp
+ *
+ * templated grouped slot implemtation for the linear probing filter
+ * (multiple slots per data element templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
 #include <atomic>
 #include "templated_qfilter_cell.hpp"
 

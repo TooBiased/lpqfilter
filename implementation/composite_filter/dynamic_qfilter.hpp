@@ -1,4 +1,21 @@
 #pragma once
+/*******************************************************************************
+ * implementation/composite_filter/dynamic_qfilter.hpp
+ *
+ * a dynamic quotient filter can grow indefinitely while keeping a
+ * false positive bound by allocating new filter levels once one level
+ * is full each level consists of a growing filter.  The dynamic
+ * quotient filter can be instantiated with many different quotient
+ * filter implementations from the basic_filter folder.
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 #include <array>
 #include <atomic>
 #include "growing_qfilter.hpp"

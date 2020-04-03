@@ -1,5 +1,19 @@
 cmake_minimum_required (VERSION 2.8)
 
+################################################################################
+# CMakeLists.txt
+#
+# cmake build script for our benchmark executables.  Should be fairly obvious
+#
+# Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+#
+# Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+#
+# All rights reserved. Published under the BSD-2 license in the LICENSE file.
+################################################################################
+
+
+
 #### USER DEFINED ##############################################################
 
 project("quotient_filter")

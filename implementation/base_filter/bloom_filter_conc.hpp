@@ -1,12 +1,26 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/bloom_filter_conc.hpp
+ *
+ * concurrent Bloom filter implemtentation
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <memory>
 #include <atomic>
 #include <algorithm>
 #include <limits>
 
-#include "utils/default_hash.h"
-#include "utils/utilities.h"
+#include "utils/default_hash.hpp"
+namespace htm = utils_tm::hash_tm;
+#include "implementation/utilities.hpp"
 
 class atomic_bit_array
 {
@@ -47,7 +61,7 @@ private:
 };
 
 
-template <class E, size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS, class hasher = qf::default_hash>
+template <class E, size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS, class hasher = htm::default_hash>
 class bloom_filter_conc
 {
 public:

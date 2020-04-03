@@ -1,11 +1,25 @@
 #pragma once
+/*******************************************************************************
+ * implementation/composite_filter/growing_qfilter.hpp
+ *
+ * this growing quotient filter implements bounded growing, by
+ * reallocating a new table, and migrating pregious elements. It can
+ * be instantiated with many different quotient filter implementations
+ * from the basic_filter folder.
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <array>
 #include <atomic>
-//#include "benchmarks/filter_select.h"
-#include "utils/utilities.h"
-#include "utils/quotient_filter_type_traits.h"
-//#include "nt_quotient_filter.h"
+#include "implementation/utilities.hpp"
+#include "implementation/handle_wrapper.hpp"
 #include "implementation/reclamation_strategies/seq_reclamation.hpp"
 
 #ifdef HAZARD
@@ -295,10 +309,6 @@ public:
         return filters[index].load()->capacity();
     }
 
-    // size_t memory_usage_bytes() const;
-    // size_t unused_memory_bits() const;
-    // double fill_level() const;
-
     handle_type get_handle()
     { return handle_type(*this, get_handle_internal()); }
 
@@ -537,101 +547,15 @@ unsafe_contains_hash(const hashed_type& hashed)
 
 // GROWING AND MULTIPLE FILTER STUFF *******************************************
 
-
-// bool grow(GrowingStatusData current_status, ReclamationHandle& handle)
-// {
-//     if (!current_status.can_grow() || current_status.index() == max_index)
-//         return false;
-
-//     auto task = growing_handler.start_growing(current_status);
-
-//     while (task == GrowingTask::old_data)
-//     {
-//         // growing for the old index was already finished successfully
-//         return true;
-//     }
-
-//     const auto current_index = current_status.index();
-
-//     auto current_qf_ptr = handle.protect(filters[current_index]);
-//     if (current_qf_ptr == nullptr)
-//         return true;
-
-//     if (task == GrowingTask::master)
-//     {
-
-//         static_cast<base_filter*>(this)->create_next_filter(current_index);
-//         auto next_qf_ptr = handle.protect(filters[current_index + 1]);
-
-//         current_qf_ptr->set_table_status(TableStatus::growing);
-//         workers_start = true;
-//         current_qf_ptr->grow(*next_qf_ptr, block_size);
-//         workers_start = false;
-//         current_qf_ptr->set_table_status(TableStatus::inactive);
-
-//         const auto new_capacity = next_qf_ptr->capacity();
-//         cluster_length_limit = std::min(MAX_RUN_SIZE, new_capacity / 2);
-//         block_size = std::min(new_capacity + shift_buffer, GROWING_BLOCK_SIZE);
-//         quotient_bits++;
-
-//         handle.safe_delete(filters[current_index]);
-
-//         growing_handler.end_growing();
-//         handle.unprotect_last(2);
-//     }
-//     else // worker
-//     {
-//         while (!workers_start)
-//         {
-//             if (growing_handler.status().index() > current_index)
-//             {
-//                 handle.unprotect_last();
-//                 return true;  // growing has already finished
-//             }
-//         };
-
-//         auto next_qf_ptr = handle.protect(filters[current_index + 1]);
-//         if (next_qf_ptr == nullptr)
-//         {
-//             handle.unprotect_last();
-//             return true;
-//         }
-
-//         current_qf_ptr->grow(*next_qf_ptr, block_size);
-
-//         handle.unprotect_last(2);
-//     }
-
-//     return true;
-// }
-
-// bool grow()
-// {
-//     if (current_index >= max_index)
-//         return false;
-
-//     static_cast<base_filter*>(this)->create_next_filter(current_index);
-//     filters[current_index]->grow(*filters[current_index + 1]);
-
-//     cluster_length_limit = std::min(MAX_RUN_SIZE, filters[current_index + 1]->capacity() / 2);
-//     quotient_bits++;
-//     current_index++;
-
-//     return true;
-// }
-
-
 template <class base_filter, class rec_strat>
 bool
 growing_quotient_filter_base<base_filter, rec_strat>::
 grow(growing_handler_type::growing_status_data& current_status,
      rec_handle& handle)
 {
-    // std::cout << "growing start " << std::flush;
     if constexpr (is_sequential)
     {
         size_t current_index = current_status.index();
-        // std::cout << "cindex:" << current_index;
 
         if (current_index >= max_index)
 			return false;
@@ -644,8 +568,6 @@ grow(growing_handler_type::growing_status_data& current_status,
                              filters[current_index + 1].load()->capacity() / 2);
 		quotient_bits++;
 		growing_handler.end_growing();
-        // std::cout << " nindex:" << current_index+1 << std::endl;
-        //if (!filters[current_index+1].load()->check_consistency()) exit(66);
 
 		return true;
     }
@@ -689,9 +611,6 @@ grow(growing_handler_type::growing_status_data& current_status,
 
             growing_handler.end_growing();
 
-            // if (!next_qf_ptr->check_consistency()) exit(66);
-            // else std::cout << "growK" << std::endl;
-
             handle.unprotect_last(2);
         }
         else // worker
@@ -732,41 +651,12 @@ create_next_filter(size_t current_index)
     filters[current_index+1].store(ptr->create_bigger_QF(this->hf));
 }
 
-// template <class base_filter, class rec_strat> template<size_t... Indices>
-// void
-// growing_quotient_filter_base<base_filter, rec_strat>::
-// create_filter(size_t current_index, std::index_sequence<Indices...>)
-// {
-//     // only necessary for the templated
-//     if constexpr (is_templated)
-//     {
-//         ((current_index == Indices
-// 		  && (this->filters[Indices] =
-// 			  new quotient_filter<index_to_reamainder_bits(Indices)>(
-//                   ONE << this->quotient_bits,
-//                   this->hf),
-// 			  true)
-// 		 )
-// 		 || ...);
-//     }
-// }
 
 template <class base_filter, class rec_strat>
 void
 growing_quotient_filter_base<base_filter, rec_strat>::
 create_filter(size_t current_index)
 {
-    // if constexpr (!is_templated)
-    // {
-    //     this->filters[current_index] =
-    //         new quotient_filter(ONE << this->quotient_bits,
-    //                             index_to_reamainder_bits(current_index),
-    //                             this->hf);
-    // }
-    // else
-    // {
-    //     create_filter(current_index, REMAINDER_SEQUENCE);
-    // }
     filter_creator::create_filter(*this, current_index);
 }
 

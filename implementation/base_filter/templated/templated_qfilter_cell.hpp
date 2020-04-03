@@ -1,9 +1,23 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/templated/templated_qfilter_cell.hpp
+ *
+ * templated implementation of the grouped slot concept for quotient filters
+ * (multiple slots per data element templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <cstddef>
 #include <atomic>
 
-#include "utils/definitions.h"
+#include "implementation/definitions.hpp"
 
 //#include "compact_quotient_filter_entry.h"
 

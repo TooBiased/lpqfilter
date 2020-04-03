@@ -1,17 +1,35 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/standard/standard_qfilter_seq.hpp
+ *
+ * sequential quotient filter with grouped slots
+ * (multiple slots per data element non-templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
 #include <iostream>
 #include <utility>
 #include <memory>
-#include "utils/utilities.h"
+
+#include "utils/default_hash.hpp"
+namespace htm = utils_tm::hash_tm;
+#include "implementation/utilities.hpp"
 #include "standard_qfilter_cell.hpp"
 
 
 namespace qf {
 
 template <class Key, class Hash>
-	class standard_qfilter_seq;
+class standard_qfilter_seq;
 
-template <class Key, class Hash = default_hash>
+template <class Key, class Hash = htm::default_hash>
 class standard_qfilter_seq_base
 {
 public:
@@ -43,7 +61,7 @@ class standard_qfilter_locking;
 
 template <class Key,
           //size_t remainder_bits,
-	class Hash = default_hash>
+          class Hash = htm::default_hash>
 	class standard_qfilter_seq : public standard_qfilter_seq_base<Key, Hash>
 {
 public:

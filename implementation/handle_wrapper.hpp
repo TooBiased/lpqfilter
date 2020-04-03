@@ -1,4 +1,19 @@
 #pragma once
+/*******************************************************************************
+ * implementation/handle_wrapper.hpp
+ *
+ * Some of our quotient filters use handles, this wrapper enables us
+ * to use the same interface for implementations that do not use
+ * handles.
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <cstddef>
 #include <utility>

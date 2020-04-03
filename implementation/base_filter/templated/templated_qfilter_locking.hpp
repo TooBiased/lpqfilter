@@ -1,9 +1,26 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/templated/templated_qfilter_locking.hpp
+ *
+ * concurrent external lock based quotient filter with templated grouped slots
+ * (multiple slots per data element templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
 #include <mutex>
 
+#include "utils/default_hash.hpp"
+namespace htm = utils_tm::hash_tm;
 #include "templated_qfilter_seq.hpp"
-#include "utils/utilities.h"
-#include "utils/definitions.h"
+#include "implementation/utilities.hpp"
+#include "implementation/definitions.hpp"
 
 
 namespace qf
@@ -11,7 +28,7 @@ namespace qf
 
 template <class Key,
           size_t remainder_bits,
-          class Hash = default_hash>
+          class Hash = htm::default_hash>
 class templated_qfilter_locking
 {
 public:

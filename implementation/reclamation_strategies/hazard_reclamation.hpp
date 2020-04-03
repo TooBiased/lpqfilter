@@ -1,14 +1,31 @@
 #pragma once
+/*******************************************************************************
+ * implementation/reclamation_strategies/hazard_reclamation.hpp
+ *
+ * This file implements a hazard reclamation strategy.  When a pointer
+ * is freed, its thread checks, weather it is used somewhere.  If it
+ * is not used the pointer is freed, otherwise the pointer is marked
+ * at the thread who uses it. This thread is now responsible for
+ * freeing the pointer.
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <atomic>
 #include <tuple>
 #include <iostream>
 
-#include "utils/mark_pointer.h"
+#include "utils/mark_pointer.hpp"
 
 namespace qf::hazard
 {
-using namespace proj;
+using namespace utils_tm;
 
 static constexpr size_t  MAX_THREADS = 64;
 static constexpr size_t  MAX_PTR = 2;

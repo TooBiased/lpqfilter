@@ -1,7 +1,25 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/templated/templated_qfilter_conc.hpp
+ *
+ * concurrent quotient filter with templated grouped slots
+ * (multiple slots per data element templated)
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
 #include <iostream>
 #include <memory>
-#include "utils/utilities.h"
+
+#include "utils/default_hash.hpp"
+namespace htm = utils_tm::hash_tm;
+#include "implementation/utilities.hpp"
 #include "templated_qfilter_cell.hpp"
 
 
@@ -12,7 +30,7 @@ template <class Key, size_t remainder_bits, class Hash>
 	class templated_qfilter_conc;
 
 template <class Key,
-	class Hash = default_hash>
+          class Hash = htm::default_hash>
 	class templated_qfilter_conc_base
 {
 public:
@@ -83,8 +101,8 @@ public:
 };
 
 
-template <class Key, size_t remainder_bits, class Hash = default_hash>
-	class templated_qfilter_conc : public templated_qfilter_conc_base<Key, Hash>
+template <class Key, size_t remainder_bits, class Hash = htm::default_hash>
+class templated_qfilter_conc : public templated_qfilter_conc_base<Key, Hash>
 {
 public:
     template <size_t new_remainder>

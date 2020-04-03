@@ -1,11 +1,24 @@
 #pragma once
+/*******************************************************************************
+ * implementation/utilities.hpp
+ *
+ * some common functions
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 #include <cmath>
 #include <bitset>
 #include <atomic>
 
-#include "definitions.h"
-#include "default_hash.h"
-#include "quotient_filter_type_traits.h"
+#include "utils/default_hash.hpp"
+#include "handle_wrapper.hpp"
+#include "definitions.hpp"
 
 namespace qf
 {
@@ -166,7 +179,7 @@ auto create_handle(QuotientFilter& filter)
 	}
 	else if constexpr (! QuotientFilter::uses_handle)
 	{
-		return QF_Handle_Wrapper(&filter);
+		return QF_Handle_Wrapper(filter);
 	}
 }
 

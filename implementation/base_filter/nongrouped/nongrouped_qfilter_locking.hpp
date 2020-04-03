@@ -1,9 +1,23 @@
 #pragma once
+/*******************************************************************************
+ * implementation/base_filter/nongrouped/nongrouped_qfilter_locking.hpp
+ *
+ * external lock based concurrent quotient filter with non-grouped slots
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
+
 #include <mutex>
 
+#include "implementation/utilities.hpp"
+#include "implementation/definitions.hpp"
 #include "nongrouped_qfilter_seq.hpp"
-#include "utils/utilities.h"
-#include "utils/definitions.h"
 
 
 namespace qf

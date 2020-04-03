@@ -1,14 +1,28 @@
 #pragma once
+/*******************************************************************************
+ * implementation/reclamation_strategies/delayed_reclamation.hpp
+ *
+ * This delayed strategy is mostly used for our tests.  It delays freeing of
+ * memory, until the handle is destroyed (usually at the end of our tests).
+ *
+ * Part of Project lpqfilter - https://github.com/TooBiased/lpqfilter.git
+ *
+ * Copyright (C) 2019-2020 Tobias Maier <t.maier@kit.edu>
+ *
+ * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ ******************************************************************************/
+
+
 
 #include <atomic>
 #include <vector>
 
-#include "utils/mark_pointer.h"
+#include "utils/mark_pointer.hpp"
 
 namespace qf::delayed
 {
 
-using namespace proj;
+using namespace utils_tm;
 
 template <class T>
 using atomic_delayed = std::atomic<T*>;
