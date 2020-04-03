@@ -34,6 +34,8 @@ public:
 	void set_failed_operation() { data = failed_op_mask; }
 };
 
+
+
 enum class ContainsResultEnum { FAILED_OPERATION, ENTRY_NOT_PRESENT, ENTRY_PRESENT, CANONICAL_SLOT_EMPTY };
 
 class ContainsResult
@@ -53,6 +55,8 @@ public:
 	void set_result(ContainsResultEnum result) { data = result; }
 };
 
+
+
 template<class remainder_type>
 std::pair<size_t, remainder_type> get_quotient_and_remainder(std::uint64_t hash, size_t quotient_bits, size_t remainder_bits)
 {
@@ -62,6 +66,8 @@ std::pair<size_t, remainder_type> get_quotient_and_remainder(std::uint64_t hash,
 	return { q, r };
 }
 
+
+
 template<class remainder_type, size_t remainder_bits>
 std::pair<size_t, remainder_type> get_quotient_and_remainder(std::uint64_t hash, size_t quotient_bits)
 {
@@ -70,6 +76,8 @@ std::pair<size_t, remainder_type> get_quotient_and_remainder(std::uint64_t hash,
 	const remainder_type r = fingerprint & ((ONE << remainder_bits) - ONE);
 	return { q, r };
 }
+
+
 
 // This is the type which holds sequences
 template <size_t... Ns> struct Sequence {};
@@ -93,6 +101,8 @@ struct seq_gen<min, min, Ns...>
 
 template <size_t min, size_t max>
 using sequence_t = typename seq_gen<min, max>::type;
+
+
 
 size_t capacity_to_quotient_bits(size_t min_capacity)
 {
