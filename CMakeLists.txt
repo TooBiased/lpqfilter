@@ -42,7 +42,9 @@ endif (UNIX)
 find_package(Threads REQUIRED)
 set(LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
-if (QFILTER_HASHFCT STREQUAL XXHASH)
+
+if ((QFILTER_HASHFCT STREQUAL XXHASH) OR
+    (QFILTER_HASHFCT STREQUAL XXH3))
   message(STATUS "Looking for xxhash")
 
   find_path(XXHASH_DIR xxHash/xxhash.h
