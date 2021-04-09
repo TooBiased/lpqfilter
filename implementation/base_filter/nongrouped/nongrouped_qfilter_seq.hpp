@@ -362,6 +362,12 @@ public:
 	nongrouped_qfilter_seq(nongrouped_qfilter_seq&& other) = default;
 	nongrouped_qfilter_seq& operator=(nongrouped_qfilter_seq&& other) = default;
 
+    void prefetch(const HashVal& hashed) const
+    {
+        auto[q, r] = get_quotient_and_remainder(hashed);
+        __builtin_prefetch(&table[q]);
+    }
+
 	qf::InsertResult insert(const key_type& key)
 	{
 		return insert_hash(hf(key));

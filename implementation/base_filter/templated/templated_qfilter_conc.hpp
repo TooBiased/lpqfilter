@@ -78,6 +78,7 @@ public:
 
 	virtual ~templated_qfilter_conc_base() = default;
 
+    virtual void prefetch(const hashed_type& hashed) const = 0;
 	virtual qf::InsertResult insert(const key_type& key) = 0;
 	virtual qf::InsertResult insert_hash(const hashed_type& hashed) = 0;
 	virtual bool quick_insert(const key_type& key) = 0;
@@ -1071,6 +1072,13 @@ public:
 			return nullptr;
 		}
 	}
+
+    void prefetch(const hashed_type& hashed) const override
+    {
+        const auto[q, r] = this->get_quotient_and_remainder(hashed);
+		const entry_pos q_pos(q);
+        __builtin_prefetch(&table[q_pos.first]);
+    }
 
 	qf::InsertResult insert(const key_type& key) override
 	{

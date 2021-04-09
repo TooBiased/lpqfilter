@@ -18,9 +18,9 @@ cmake_minimum_required (VERSION 2.8)
 
 project("quotient_filter")
 
-set(QFILTER_HASHFCT XXHASH CACHE STRING
+set(QFILTER_HASHFCT XXH3 CACHE STRING
   "Changes the used hash function if XXHASH is not available, MURMUR2 is used as backoff!")
-set_property(CACHE QFILTER_HASHFCT PROPERTY STRINGS XXHASH MURMUR2)
+set_property(CACHE QFILTER_HASHFCT PROPERTY STRINGS XXH3 XXHASH MURMUR2 MURMUR3)
 
 #### BASIC SETTINGS ############################################################
 
@@ -85,12 +85,6 @@ function( FilterTest variant sources name )
   target_link_libraries(${name} ${LIBRARIES})
 endfunction( FilterTest )
 
-function( FilterTestNoQi variant sources name )
-  add_executable(${name} ${sources})
-  target_compile_definitions(${name} PRIVATE -D ${variant} -D ${HASH_FCT} -D NO_QI)
-  target_link_libraries(${name} ${LIBRARIES})
-endfunction( FilterTestNoQi )
-
 FilterTest( BLOOM             benchmarks/basic_test.cpp  basic_bloom_concurrent )
 FilterTest( CQF_WRAPPER       "${cqf_sources_basic}"     basic_cqf_wrapper )
 FilterTest( QFILTER           benchmarks/basic_test.cpp  basic_compact_qfilter_concurrent )
@@ -118,5 +112,10 @@ FilterTest( LPFILTER_SEQ              benchmarks/fill_ratio_test.cpp   fill_lpfi
 # FilterTest( TEMPLATED_LPFILTER        benchmarks/fill_ratio_test.cpp   fill_templated_lpfilter_conc )
 # FilterTest( TEMPLATED_LPFILTER_SEQ    benchmarks/fill_ratio_test.cpp   fill_templated_lpfilter_seq )
 
-FilterTest(     QFILTER  benchmarks/progression_test.cpp  progression_qfilter_conc_qi )
-FilterTestNoQi( QFILTER  benchmarks/progression_test.cpp  progression_qfilter_conc_no_qi )
+FilterTest( QFILTER  benchmarks/progression_test.cpp  progression_qfilter_conc_qi )
+FilterTest( QFILTER  benchmarks/progression_test.cpp  progression_qfilter_conc_no_qi )
+target_compile_definitions(progression_qfilter_conc_no_qi PRIVATE -D NO_QI)
+FilterTest( QFILTER  benchmarks/progression_test.cpp  progression_qfilter_conc_no_pre )
+target_compile_definitions(progression_qfilter_conc_no_pre PRIVATE -D NO_PRE)
+FilterTest( QFILTER  benchmarks/progression_test.cpp  progression_qfilter_conc_no_qi_no_pre )
+target_compile_definitions(progression_qfilter_conc_no_qi_no_pre PRIVATE -D NO_QI -D NO_PRE)

@@ -39,6 +39,7 @@ public:
 
 	virtual ~standard_qfilter_seq_base() = default;
 
+    virtual void prefetch(const hashed_type& hashed) const = 0;
 	virtual qf::InsertResult insert(const key_type& key) = 0;
 	virtual qf::InsertResult insert_hash(const hashed_type& hashed) = 0;
 	virtual bool quick_insert(const key_type& key) = 0;
@@ -115,7 +116,9 @@ public:
     // BASIC TABLE FUNCTIONALITY ***********************************************
 	this_type* create_bigger_QF(
         const hash_function_type& hash = hash_function_type()) const override;
-	qf::InsertResult insert(const key_type& key) override;
+
+    void prefetch(const hashed_type& hashed) const override;
+    qf::InsertResult insert(const key_type& key) override;
 	qf::InsertResult insert_hash(const hashed_type& hashed) override;
 	bool quick_insert(const key_type& key) override;
     bool quick_insert_hash(const hashed_type& hashed) override;
@@ -240,6 +243,15 @@ standard_qfilter_seq<K,H>::create_bigger_QF(const hash_function_type& hash) cons
 // *****************************************************************************
 // *** MAIN FUNCTIONALITY ******************************************************
 // *****************************************************************************
+template<class K, class H>
+void
+standard_qfilter_seq<K,H>::prefetch(const hashed_type& hashed) const
+{
+    const auto [q, r] = this->get_quotient_and_remainder(hashed);
+    const auto q_pos = quotient_position(q);
+    __builtin_prefetch(&table[q_pos.first]);
+}
+
 template<class K, class H>
 qf::InsertResult
 standard_qfilter_seq<K,H>::insert(const key_type& key)

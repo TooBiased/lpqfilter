@@ -18,6 +18,9 @@
 
 #include <array>
 #include <atomic>
+#include <memory>
+#include <type_traits>
+
 #include "growing_qfilter.hpp"
 
 
@@ -67,20 +70,30 @@ public:
     static constexpr bool qi_default = true;
 #endif
 
+#ifdef NO_PREFETCH
+    static constexpr bool pretetch_default = false;
+#else
+    static constexpr bool prefetch_default = true;
+#endif
 
 
-template <class BaseFilter, bool use_quick_insert = qi_default>
+template <class BaseFilter,
+          bool use_quick_insert = qi_default,
+          bool use_prefetching = prefetch_default>
 class dynamic_quotient_filter_base
 {
     static_assert(BaseFilter::is_growing_compatible,
                   "base table in dynamic_quotient_filter_base non compatible");
-    using this_type = dynamic_quotient_filter_base<BaseFilter, use_quick_insert>;
+    using this_type = dynamic_quotient_filter_base<BaseFilter,
+                                                   use_quick_insert,
+                                                   use_prefetching>;
     using base_filter_type  = BaseFilter;
     using growing_filter_type = qf::growing_quotient_filter<BaseFilter>;
 
     using level_handle_type = typename growing_filter_type::handle_type;
 
     static constexpr bool quick_insert_enabled = use_quick_insert;
+    static constexpr bool prefetching_enabled  = use_prefetching;
 
 public:
     static constexpr bool is_growing_compatible = false;
@@ -92,6 +105,8 @@ public:
 
     using key_type           = typename base_filter_type::key_type;
     using hash_function_type = typename base_filter_type::hash_function_type;
+    using hashed_value_type  = typename std::invoke_result<hash_function_type,
+                                                           key_type>::type;
     using handle_type = dynamic_quotient_filter_handle<this_type>;
     friend handle_type;
 
@@ -120,6 +135,7 @@ public:
     handle_type get_handle();
 
 private:
+    void prefetch(hashed_value_type hashed, size_t lvl, handle_type& dyn_handle) const;
     bool add_level(size_t next_level);
     void update_handle(handle_type& dyn_handle);
 
@@ -142,8 +158,8 @@ private:
 
 
 
-template <class QF, bool qi>
-dynamic_quotient_filter_base<QF,qi>::dynamic_quotient_filter_base(
+template <class QF, bool qi, bool pf>
+dynamic_quotient_filter_base<QF,qi,pf>::dynamic_quotient_filter_base(
     double false_positive_rate,
     size_t min_capacity,
     const hash_function_type& hf)
@@ -162,8 +178,8 @@ dynamic_quotient_filter_base<QF,qi>::dynamic_quotient_filter_base(
 
 
 
-template <class QF, bool qi>
-dynamic_quotient_filter_base<QF,qi>::dynamic_quotient_filter_base(
+template <class QF, bool qi, bool pf>
+dynamic_quotient_filter_base<QF,qi,pf>::dynamic_quotient_filter_base(
     dynamic_quotient_filter_base&& other)
     : hf(other.hf),
       lvl0_initial_q_bits(other.lvl0_initial_q_bits),
@@ -176,9 +192,9 @@ dynamic_quotient_filter_base<QF,qi>::dynamic_quotient_filter_base(
 
 
 
-template <class QF, bool qi>
-dynamic_quotient_filter_base<QF,qi>&
-dynamic_quotient_filter_base<QF,qi>::operator=(dynamic_quotient_filter_base&& other)
+template <class QF, bool qi, bool pf>
+dynamic_quotient_filter_base<QF,qi,pf>&
+dynamic_quotient_filter_base<QF,qi,pf>::operator=(dynamic_quotient_filter_base&& other)
 {
     hf = other.hf;
     lvl0_initial_q_bits = other.lvl0_initial_q_bits;
@@ -193,14 +209,31 @@ dynamic_quotient_filter_base<QF,qi>::operator=(dynamic_quotient_filter_base&& ot
     return *this;
 }
 
+template <class QF, bool qi, bool pf>
+void
+dynamic_quotient_filter_base<QF,qi,pf>::prefetch(hashed_value_type hashed,
+                                                 size_t max_lvl,
+                                                 handle_type& dyn_handle) const
+{
+    for (size_t lvl = 0; lvl < max_lvl; ++lvl)
+    {
+        levels[lvl]->unsafe_prefetch(hashed);
+    }
+    dyn_handle.handle.prefetch(hashed);
+}
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 bool
-dynamic_quotient_filter_base<QF,qi>::insert(const key_type& key, handle_type& dyn_handle)
+dynamic_quotient_filter_base<QF,qi,pf>::insert(const key_type& key, handle_type& dyn_handle)
 {
     const auto hashed = hf(key);
     const size_t local_completed_index = completed_index;
+
+    if constexpr (prefetching_enabled)
+    {
+        prefetch(hashed, local_completed_index, dyn_handle);
+    }
 
     if constexpr (quick_insert_enabled)
     {
@@ -223,29 +256,29 @@ dynamic_quotient_filter_base<QF,qi>::insert(const key_type& key, handle_type& dy
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 bool
-dynamic_quotient_filter_base<QF,qi>::insert_grow_test(const key_type& key)
+dynamic_quotient_filter_base<QF,qi,pf>::insert_grow_test(const key_type& key)
 {
     if constexpr (!is_sequential) return true;
 
     if constexpr (quick_insert_enabled)
-                 {
-                     for (size_t current_level = 0; current_level < completed_index; current_level++)
-                     {
-                         if (levels[current_level]->quick_insert(key))
-                             return true;
-                     }
-                 }
+    {
+        for (size_t current_level = 0; current_level < completed_index; current_level++)
+        {
+            if (levels[current_level]->quick_insert(key))
+                return true;
+        }
+    }
 
     return levels[completed_index]->insert_grow_test(key);
 }
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 void
-dynamic_quotient_filter_base<QF,qi>::grow()
+dynamic_quotient_filter_base<QF,qi,pf>::grow()
 {
     if constexpr (!is_sequential) return;
 
@@ -255,12 +288,17 @@ dynamic_quotient_filter_base<QF,qi>::grow()
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 bool
-dynamic_quotient_filter_base<QF,qi>::contains(const key_type& key, handle_type& dyn_handle)
+dynamic_quotient_filter_base<QF,qi,pf>::contains(const key_type& key, handle_type& dyn_handle)
 {
     const auto hashed = hf(key);
     const size_t local_completed_index = completed_index;
+
+    if constexpr (prefetching_enabled)
+    {
+        prefetch(hashed, local_completed_index, dyn_handle);
+    }
 
     for (size_t current_level = 0; current_level < local_completed_index; current_level++)
     {
@@ -282,18 +320,18 @@ dynamic_quotient_filter_base<QF,qi>::contains(const key_type& key, handle_type& 
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 size_t
-dynamic_quotient_filter_base<QF,qi>::capacity() const
+dynamic_quotient_filter_base<QF,qi,pf>::capacity() const
 {
     return levels[completed_index]->capacity();
 }
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 size_t
-dynamic_quotient_filter_base<QF,qi>::memory_usage_bytes() const
+dynamic_quotient_filter_base<QF,qi,pf>::memory_usage_bytes() const
 {
     size_t mem_usage = 0;
 
@@ -307,9 +345,9 @@ dynamic_quotient_filter_base<QF,qi>::memory_usage_bytes() const
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 size_t
-dynamic_quotient_filter_base<QF,qi>::unused_memory_bits() const
+dynamic_quotient_filter_base<QF,qi,pf>::unused_memory_bits() const
 {
     size_t unused_bits = 0;
 
@@ -323,18 +361,18 @@ dynamic_quotient_filter_base<QF,qi>::unused_memory_bits() const
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 double
-dynamic_quotient_filter_base<QF,qi>::fill_level() const
+dynamic_quotient_filter_base<QF,qi,pf>::fill_level() const
 {
     return levels[completed_index]->fill_level();
 }
 
 
 
-template <class QF, bool qi>
-typename dynamic_quotient_filter_base<QF,qi>::handle_type
-dynamic_quotient_filter_base<QF,qi>::get_handle()
+template <class QF, bool qi, bool pf>
+typename dynamic_quotient_filter_base<QF,qi,pf>::handle_type
+dynamic_quotient_filter_base<QF,qi,pf>::get_handle()
 {
     const size_t local_completed_index = completed_index;
     return handle_type(*this, create_handle(*levels[local_completed_index].get()),
@@ -345,9 +383,9 @@ dynamic_quotient_filter_base<QF,qi>::get_handle()
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 void
-dynamic_quotient_filter_base<QF,qi>::update_handle(handle_type& dyn_handle)
+dynamic_quotient_filter_base<QF,qi,pf>::update_handle(handle_type& dyn_handle)
 {
     const size_t local_completed_index = completed_index;
 
@@ -360,9 +398,9 @@ dynamic_quotient_filter_base<QF,qi>::update_handle(handle_type& dyn_handle)
 
 
 
-template <class QF, bool qi>
+template <class QF, bool qi, bool pf>
 bool
-dynamic_quotient_filter_base<QF,qi>::add_level(size_t next_level)
+dynamic_quotient_filter_base<QF,qi,pf>::add_level(size_t next_level)
 {
     if (next_level <= completed_index)
         return true;

@@ -650,8 +650,15 @@ public:
 		return *this;
 	}
 
+
 	nongrouped_qfilter_conc(nongrouped_qfilter_conc&&) = default;
 	nongrouped_qfilter_conc& operator=(nongrouped_qfilter_conc&&) = default;
+
+    void prefetch(const HashVal& hashed) const
+    {
+        auto[q, r] = get_quotient_and_remainder(hashed);
+        __builtin_prefetch(&table[q]);
+    }
 
 	bool insert(const Key& key)
 	{

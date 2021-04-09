@@ -239,6 +239,7 @@ public:
         handle_type(handle_type&& other);
         handle_type& operator =(handle_type&& other);
 
+        inline void prefetch(const hashed_type& hashed);
         inline bool insert(const key_type& key);
         inline bool insert_hash(const hashed_type& hashed);
         inline bool quick_insert(const key_type& key);
@@ -282,13 +283,16 @@ public:
     growing_quotient_filter_base& operator=(growing_quotient_filter_base&&);
 
 
+
+    inline void prefetch(const hashed_type& hashed, rec_handle& handle);
+    inline void unsafe_prefetch(const hashed_type& hashed) const;
+
     inline bool insert_hash      (const hashed_type& hashed,
                                   rec_handle& handle);
     inline qf::ContainsResult contains_hash(const hashed_type& hashed,
                                   rec_handle& handle);
     inline bool quick_insert_hash(const hashed_type& hashed);
     inline qf::ContainsResult unsafe_contains_hash(const hashed_type& hashed);
-
 
     inline bool insert                (const key_type& key, rec_handle& handle)
     { return insert_hash(hf(key), handle); }
@@ -421,6 +425,37 @@ growing_quotient_filter_base<base_filter, rec_strat>::
 
 
 // GROWING_QUOTIENT_FILTER_BASE:   MAIN FUNCTIONALITY ***************************************
+
+template <class base_filter, class rec_strat>
+void
+growing_quotient_filter_base<base_filter, rec_strat>::
+prefetch(const hashed_type& hashed, rec_handle& handle)
+{
+    if constexpr (is_sequential)
+    {
+        auto current_status = growing_handler.status();
+        filters[current_status.index()].load()->prefetch(hashed);
+        return;
+    }
+    auto before_status = growing_handler.status();
+    if (before_status.is_growing()) return;
+
+    auto qf_ptr = handle.protect(filters[before_status.index()]);
+    if (qf_ptr == nullptr)
+        return;
+
+    qf_ptr->prefetch(hashed);
+
+    handle.unprotect_last();
+}
+
+template <class base_filter, class rec_strat>
+void
+growing_quotient_filter_base<base_filter, rec_strat>::
+unsafe_prefetch(const hashed_type& hashed) const
+{
+    filters[max_index].load()->prefetch(hashed);
+}
 
 template <class base_filter, class rec_strat>
 bool
@@ -692,6 +727,12 @@ growing_quotient_filter_base<base_filter, rec_strat>::handle_type::operator=(
     new (this) handle_type(std::move(other));
     return *this;
 }
+
+template <class base_filter, class rec_strat>
+void
+growing_quotient_filter_base<base_filter, rec_strat>::
+handle_type::prefetch(const hashed_type& hashed)
+{ return qf.prefetch(hashed, handle); }
 
 template <class base_filter, class rec_strat>
 bool

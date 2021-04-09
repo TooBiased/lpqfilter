@@ -70,7 +70,7 @@ public:
 	nongrouped_qfilter_locking(nongrouped_qfilter_locking&&) = default;
 	nongrouped_qfilter_locking& operator=(nongrouped_qfilter_locking&&)=default;
 
-	bool insert(const key_type& key)
+    bool insert(const key_type& key)
 	{
 		const auto hashed = hf(key);
 		const auto qr = filter.get_quotient_and_remainder(hashed);
