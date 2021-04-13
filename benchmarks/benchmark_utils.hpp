@@ -26,8 +26,8 @@ struct benchmark_config
 
 struct basic_benchmark_config : public benchmark_config
 {
-	size_t cap = 2000000;
-	size_t min_cap = 250000;
+	size_t cap = 2'000'000;
+	size_t min_cap = 250'000;
 	double fp_rate = 0.0001;
 	bool growing = false;
 	bool dynamic = false;

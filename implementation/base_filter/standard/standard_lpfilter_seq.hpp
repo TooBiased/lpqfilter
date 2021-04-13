@@ -59,7 +59,7 @@ public:
 	standard_lpfilter_seq(size_t capacity = qf::DEFAULT_MIN_CAPACITY,
                           size_t remainder = qf::DEFAULT_REMAINDER_BITS,
                           const hasher& hf = hasher())
-        : cc(remainder),
+        : cc(remainder+3),
           quotient_bits(qf::capacity_to_quotient_bits(capacity)),
           hf(hf)
 	{

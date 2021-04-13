@@ -20,6 +20,7 @@
 
 #include "utils/default_hash.hpp"
 namespace htm = utils_tm::hash_tm;
+#include "utils/fastrange.hpp"
 #include "implementation/utilities.hpp"
 
 class atomic_bit_array
@@ -80,9 +81,9 @@ public:
                             const hasher& hf = hasher())
     {
         _capacity = (1ull << qf::capacity_to_quotient_bits(min_capacity));
-        auto cap  = _capacity * remainder_bits;
-        _factor   = double(cap)/double(std::numeric_limits<size_t>::max());
-        _table    = atomic_bit_array(cap);
+        _nbits    = _capacity * (3+remainder_bits);
+        //_factor   = double(cap)/double(std::numeric_limits<size_t>::max());
+        _table    = atomic_bit_array(_nbits);
 
         _hashfcts[0] = hf;
         for (size_t i = 0; i < H; ++i)
@@ -127,12 +128,14 @@ private:
 
     static constexpr size_t H = std::max<int>(1,(remainder_bits>>1)-1);
     hasher           _hashfcts[H];
-    double           _factor;
+    //double           _factor;
+    size_t           _nbits;
     size_t           _capacity;
     atomic_bit_array _table;
 
     size_t hash(size_t i, const E& e) const
     {
-        return _hashfcts[i](e)* _factor;
+        return utils_tm::fastrange64(_nbits, _hashfcts[i](e));// * _factor;
+
     }
 };

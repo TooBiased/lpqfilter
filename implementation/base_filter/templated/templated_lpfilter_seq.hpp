@@ -26,7 +26,7 @@ namespace htm = utils_tm::hash_tm;
 namespace qf {
 
 template <class Key,
-          size_t remainder_bits,
+          size_t RemainderBits,
           class Hash = htm::default_hash>
 class templated_lp_filter_seq
 {
@@ -37,6 +37,7 @@ public:
     static constexpr bool is_growing    = false;
     static constexpr bool is_dynamic    = false;
     static constexpr bool uses_handle   = false;
+    static constexpr size_t remainder_bits = RemainderBits+3;
     template <size_t rem>
     using instanciated = templated_lp_filter_seq<Key, rem, Hash>;
 

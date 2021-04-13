@@ -323,8 +323,6 @@ int main(int argn, char** argc)
 
     double fp_rate = c.double_arg("-fp_rate_%", 0.0);
     size_t rbits = c.int_arg("-r_bits", 0);
-    // this is now standard, no need to be specified
-    [[maybe_unused]]bool adjust_lp_fp_rate = c.bool_arg("-adjust_lp_fp_rate");
 
     if (rbits != 0 && fp_rate != 0.0)
     {

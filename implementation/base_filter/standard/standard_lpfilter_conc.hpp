@@ -61,7 +61,7 @@ public:
 	standard_lpfilter_conc(size_t capacity = qf::DEFAULT_MIN_CAPACITY,
                            size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS,
                            const hash_function_type& hf = hash_function_type())
-        : cc(remainder_bits),
+        : cc(remainder_bits+3),
           quotient_bits(qf::capacity_to_quotient_bits(capacity)),
           hf(hf)
 	{

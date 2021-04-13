@@ -56,7 +56,7 @@ public:
                              size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS,
                              const hash_function_type& hf =hash_function_type())
 		: hf(hf),
-          remainder_bits(remainder_bits),
+          remainder_bits(remainder_bits+3),
           quotient_bits(qf::capacity_to_quotient_bits(capacity))
 	{
 		table_capacity = one << quotient_bits;
