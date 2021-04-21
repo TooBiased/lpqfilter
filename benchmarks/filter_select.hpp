@@ -119,6 +119,12 @@ using QF_type = qf::templated_lpfilter_seq<Key, remainder_bits, htm::default_has
 template <class Key, size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS>
 using QF_type = bloom_filter_conc<Key, remainder_bits, htm::default_hash>;
 
+#elif defined(CLASSIC_BLOOM)
+#include "implementation/base_filter/bloom_filter_conc.hpp"
+template <class Key>
+using QF_type = classic_bloom_filter_conc<Key, htm::default_hash>;
+
+
 // #elif defined(NOLOSS_QFILTER)
 // #include "implementation/base_filter/noloss/noloss_qfilter_wrapper.hpp"
 // template <class Key, size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS>

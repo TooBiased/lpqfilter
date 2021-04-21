@@ -85,7 +85,6 @@ public:
         //_factor   = double(cap)/double(std::numeric_limits<size_t>::max());
         _table    = atomic_bit_array(_nbits);
 
-        _hashfcts[0] = hf;
         for (size_t i = 0; i < H; ++i)
         {
             _hashfcts[i] = hasher(hf.seed + i*230498129012931ull);
@@ -131,6 +130,87 @@ private:
     //double           _factor;
     size_t           _nbits;
     size_t           _capacity;
+    atomic_bit_array _table;
+
+    size_t hash(size_t i, const E& e) const
+    {
+        return utils_tm::fastrange64(_nbits, _hashfcts[i](e));// * _factor;
+
+    }
+};
+
+
+template <class E, class hasher = htm::default_hash>
+class classic_bloom_filter_conc
+{
+public:
+    static constexpr bool is_growing_compatible = false;
+    static constexpr bool is_templated  = false;
+    static constexpr bool is_sequential = false;
+    static constexpr bool is_growing    = false;
+    static constexpr bool is_dynamic    = false;
+    static constexpr bool uses_handle   = false;
+
+    using key_type = E;
+
+    classic_bloom_filter_conc(size_t min_capacity = qf::DEFAULT_MIN_CAPACITY,
+                              size_t remainder_bits = qf::DEFAULT_REMAINDER_BITS,
+                              const hasher& hf = hasher())
+    {
+        double p = (1<<remainder_bits);
+
+        _nbits = double(min_capacity)*std::log(p)/(std::log(2)*std::log(2));
+        _nhash = double(_nbits)/double(min_capacity) * std::log(2);
+
+        _capacity = min_capacity;
+
+        _table    = atomic_bit_array(_nbits);
+
+        _hashfcts = std::make_unique<hasher[]>(_nhash);
+        for (size_t i = 0; i < _nhash; ++i)
+        {
+            _hashfcts[i] = hasher(hf.seed + i*230498129012931ull);
+        }
+    }
+
+    bool insert(const E& e)
+    {
+        for (size_t i = 0; i < _nhash; ++i)
+        {
+            _table.set(hash(i, e));
+        }
+        return true;
+    }
+
+    bool contains(const E& e) const
+    {
+        for (size_t i = 0; i < _nhash; ++i)
+        {
+            if (! _table.get(hash(i, e))) return false;
+        }
+        return true;
+    }
+
+
+    size_t capacity() const
+    {
+        return _capacity;
+    }
+
+
+
+private:
+    static constexpr size_t get_cap(size_t capacity)
+    {
+        // Where do I use this function? is it necessary?
+        // in this case we would need the intended fp-rate
+        return capacity;
+    }
+
+    size_t                    _nbits;
+    size_t                    _nhash;
+    size_t                    _capacity;
+    std::unique_ptr<hasher[]> _hashfcts;
     atomic_bit_array _table;
 
     size_t hash(size_t i, const E& e) const
