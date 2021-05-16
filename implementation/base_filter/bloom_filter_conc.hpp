@@ -125,7 +125,7 @@ private:
         return cap;
     }
 
-    static constexpr size_t H = std::max<int>(1,(remainder_bits>>1)-1);
+    static constexpr size_t H = std::max<int>(1,(remainder_bits>>1));
     hasher           _hashfcts[H];
     //double           _factor;
     size_t           _nbits;
