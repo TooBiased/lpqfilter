@@ -16,27 +16,25 @@
 #include "utils/default_hash.hpp"
 namespace htm = utils_tm::hash_tm;
 
+#include "implementation/definitions.hpp"
 #include "implementation/handle_wrapper.hpp"
 #include "implementation/utilities.hpp"
-#include "implementation/definitions.hpp"
 
 extern "C"
 {
 #include "misc/cqf/include/gqf.h"
-#include "misc/cqf/include/gqf_int.h"
 #include "misc/cqf/include/gqf_file.h"
+#include "misc/cqf/include/gqf_int.h"
 }
 
 template <class K, size_t Remainder, class HF = htm::default_hash>
 class cqf_wrapper
 {
-private:
-
+  private:
     static constexpr size_t _remainder = Remainder;
-    QF     _cqf;
+    QF                      _cqf;
 
-public:
-
+  public:
     static constexpr bool is_growing_compatible = false;
     static constexpr bool is_templated          = false;
     static constexpr bool is_sequential         = false;
@@ -47,14 +45,18 @@ public:
     using key_type = K;
     using hasher   = HF;
 
-    cqf_wrapper(size_t min_capacity = 2048,
-                [[maybe_unused]]const hasher& hf = hasher())
+    cqf_wrapper(size_t                         min_capacity = 2048,
+                [[maybe_unused]] const hasher& hf           = hasher())
     {
-        size_t s = 2048;
+        size_t s   = 2048;
         size_t log = 11;
-        while (s < min_capacity) { s <<= 1; ++log; }
+        while (s < min_capacity)
+        {
+            s <<= 1;
+            ++log;
+        }
 
-        if (!qf_malloc(&_cqf, s, log+_remainder, 0, QF_HASH_DEFAULT, 0))
+        if (!qf_malloc(&_cqf, s, log + _remainder, 0, QF_HASH_DEFAULT, 0))
         {
             exit(666);
         }
@@ -62,7 +64,7 @@ public:
 
     cqf_wrapper(const cqf_wrapper&) = default;
     cqf_wrapper& operator=(const cqf_wrapper&) = default;
-    cqf_wrapper(cqf_wrapper&&) = default;
+    cqf_wrapper(cqf_wrapper&&)                 = default;
     cqf_wrapper& operator=(cqf_wrapper&&) = default;
 
     inline bool insert(const key_type& key)
@@ -85,10 +87,7 @@ public:
         return (count > 0);
     }
 
-    inline size_t capacity() const
-    {
-        return _cqf.metadata->nslots;
-    }
+    inline size_t capacity() const { return _cqf.metadata->nslots; }
 
     inline size_t memory_usage_bytes() const
     {
@@ -97,10 +96,9 @@ public:
 
     inline size_t unused_memory_bits() const
     {
-        return (_cqf.metadata->total_size_in_bytes << 3)
-            - (double(_cqf.metadata->nslots)*(2.125+_remainder));
+        return (_cqf.metadata->total_size_in_bytes << 3) -
+               (double(_cqf.metadata->nslots) * (2.125 + _remainder));
     }
 
-private:
-
+  private:
 };

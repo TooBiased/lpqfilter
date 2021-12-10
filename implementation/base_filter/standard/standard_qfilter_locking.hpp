@@ -17,28 +17,27 @@
 
 #include "utils/default_hash.hpp"
 namespace htm = utils_tm::hash_tm;
-#include "implementation/utilities.hpp"
 #include "implementation/definitions.hpp"
+#include "implementation/utilities.hpp"
 #include "standard_qfilter_seq.hpp"
 
 namespace qf
 {
 
 template <class Key, class Hash = htm::default_hash>
-class standard_qfilter_locking
-    : public standard_qfilter_seq<Key, Hash>
+class standard_qfilter_locking : public standard_qfilter_seq<Key, Hash>
 {
-private:
+  private:
     using this_type = standard_qfilter_locking<Key, Hash>;
     using base_type = standard_qfilter_seq<Key, Hash>;
 
-public:
+  public:
     static constexpr bool is_growing_compatible = false;
-    static constexpr bool is_templated  = false;
-    static constexpr bool is_sequential = false;
-    static constexpr bool is_growing    = false;
-    static constexpr bool is_dynamic    = false;
-    static constexpr bool uses_handle   = false;
+    static constexpr bool is_templated          = false;
+    static constexpr bool is_sequential         = false;
+    static constexpr bool is_growing            = false;
+    static constexpr bool is_dynamic            = false;
+    static constexpr bool uses_handle           = false;
 
     using key_type           = typename base_type::key_type;
     using hash_function_type = typename base_type::hash_function_type;
@@ -46,35 +45,33 @@ public:
     using next_smaller_qf    = this_type;
     using next_bigger_qf     = this_type;
 
-private:
-
+  private:
+    using base_type::hf;
     using base_type::quotient_bits;
     using base_type::table_capacity;
-    using base_type::hf;
 
     static constexpr size_t lock_range     = 4096;
     static constexpr size_t log_lock_range = 12;
 
-    mutable std::unique_ptr<std::mutex[]>  locks;
+    mutable std::unique_ptr<std::mutex[]> locks;
 
 
-public:
-
-    standard_qfilter_locking(size_t min_capacity = qf::DEFAULT_MIN_CAPACITY,
-                             size_t remainder = qf::DEFAULT_REMAINDER_BITS,
-                             const hash_function_type& hf =hash_function_type())
+  public:
+    standard_qfilter_locking(
+        size_t                    min_capacity = qf::DEFAULT_MIN_CAPACITY,
+        size_t                    remainder    = qf::DEFAULT_REMAINDER_BITS,
+        const hash_function_type& hf           = hash_function_type())
         : base_type(min_capacity, remainder, hf)
     {
         size_t nlocks = (base_type::capacity() >> log_lock_range) + 2;
-        //std::cout << "nlocks " <<nlocks << std::endl;
-        locks  = std::make_unique<std::mutex[]>(nlocks);
+        // std::cout << "nlocks " <<nlocks << std::endl;
+        locks = std::make_unique<std::mutex[]>(nlocks);
     }
 
-    standard_qfilter_locking(base_type&& base)
-        : base_type(base)
+    standard_qfilter_locking(base_type&& base) : base_type(base)
     {
         size_t nlocks = (base_type::capacity() >> log_lock_range) + 2;
-        //std::cout << "nlocks " <<nlocks << std::endl;
+        // std::cout << "nlocks " <<nlocks << std::endl;
         locks = std::make_unique<std::mutex[]>(nlocks);
     }
 
@@ -82,7 +79,7 @@ public:
         : base_type(other)
     {
         size_t nlocks = (base_type::capacity() >> log_lock_range) + 2;
-        //std::cout << "nlocks " <<nlocks << std::endl;
+        // std::cout << "nlocks " <<nlocks << std::endl;
         locks = std::make_unique<std::mutex[]>(nlocks);
     }
 
@@ -99,7 +96,7 @@ public:
         : base_type(other)
     {
         size_t nlocks = (base_type::capacity() >> log_lock_range) + 2;
-        //std::cout << "nlocks " <<nlocks << std::endl;
+        // std::cout << "nlocks " <<nlocks << std::endl;
         locks = std::make_unique<std::mutex[]>(nlocks);
     }
 
@@ -113,8 +110,8 @@ public:
 
 
 
-    using base_type::get_quotient_and_remainder;
     using base_type::capacity;
+    using base_type::get_quotient_and_remainder;
 
 
 
@@ -128,10 +125,10 @@ public:
         auto [qr, re] = get_quotient_and_remainder(hashed);
         qr >>= log_lock_range;
 
-        //std::cout << "qr " << qr << std::endl;
+        // std::cout << "qr " << qr << std::endl;
 
         std::lock_guard<std::mutex> lock0(locks[qr]);
-        std::lock_guard<std::mutex> lock1(locks[qr+1]);
+        std::lock_guard<std::mutex> lock1(locks[qr + 1]);
         return base_type::insert_hash(hashed);
     }
 
@@ -149,7 +146,7 @@ public:
 
         // qi only looks at canonical slot >> no need for a second lock
         std::lock_guard<std::mutex> lock0(locks[qr]);
-        std::lock_guard<std::mutex> lock1(locks[qr+1]);
+        std::lock_guard<std::mutex> lock1(locks[qr + 1]);
         return base_type::quick_insert_hash(hashed);
     }
 
@@ -160,14 +157,14 @@ public:
         return contains_hash(hf(key));
     }
 
-    inline qf::ContainsResult contains_hash(
-        const hashed_type& hashed) const override
+    inline qf::ContainsResult
+    contains_hash(const hashed_type& hashed) const override
     {
         auto [qr, re] = get_quotient_and_remainder(hashed);
         qr >>= log_lock_range;
 
         std::lock_guard<std::mutex> lock0(locks[qr]);
-        std::lock_guard<std::mutex> lock1(locks[qr+1]);
+        std::lock_guard<std::mutex> lock1(locks[qr + 1]);
         return base_type::contains_hash(hashed);
     }
 
@@ -176,8 +173,8 @@ public:
         return base_type::contains(key);
     }
 
-    inline qf::ContainsResult unsafe_contains_hash(
-        const hashed_type& hashed) const
+    inline qf::ContainsResult
+    unsafe_contains_hash(const hashed_type& hashed) const
     {
         return base_type::contains_hash(hashed);
     }
@@ -187,7 +184,7 @@ public:
     inline this_type* create_bigger_QF(
         const hash_function_type& hash = hash_function_type()) const override
     {
-        auto temp = base_type::create_bigger_QF(hash);
+        auto temp   = base_type::create_bigger_QF(hash);
         auto result = new this_type(std::move(*temp));
         delete temp;
         return result;
@@ -202,14 +199,14 @@ public:
 
     inline size_t memory_usage_bytes() const
     {
-        return base_type::memory_usage_bytes()
-            + (table_capacity >> log_lock_range) * sizeof(std::mutex);
+        return base_type::memory_usage_bytes() +
+               (table_capacity >> log_lock_range) * sizeof(std::mutex);
     }
 
     inline size_t unused_memory_bits() const
     {
-        return base_type::unused_memory_bits()
-            + (table_capacity >> log_lock_range) * sizeof(std::mutex) * 8;
+        return base_type::unused_memory_bits() +
+               (table_capacity >> log_lock_range) * sizeof(std::mutex) * 8;
     }
 };
 

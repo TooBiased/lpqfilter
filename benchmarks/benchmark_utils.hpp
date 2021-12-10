@@ -17,85 +17,87 @@
 
 struct benchmark_config
 {
-	size_t p = 1;
-	size_t it = 3;
-	size_t sub_it = 3;
-	size_t n = 1'000'000;
-	size_t bits = 13;
+    size_t p      = 1;
+    size_t it     = 3;
+    size_t sub_it = 3;
+    size_t n      = 1'000'000;
+    size_t bits   = 13;
 };
 
 struct basic_benchmark_config : public benchmark_config
 {
-	size_t cap = 2'000'000;
-	size_t min_cap = 250'000;
-	double fp_rate = 0.0001;
-	bool growing = false;
-	bool dynamic = false;
+    size_t cap     = 2'000'000;
+    size_t min_cap = 250'000;
+    double fp_rate = 0.0001;
+    bool   growing = false;
+    bool   dynamic = false;
 
-	void set_rbits(size_t rbits)
-	{
-		bits = rbits;
-		fp_rate = qf::remainder_bits_to_false_positive_rate(bits);
-	}
+    void set_rbits(size_t rbits)
+    {
+        bits    = rbits;
+        fp_rate = qf::remainder_bits_to_false_positive_rate(bits);
+    }
 
-	void set_fp_rate(double fp_rate)
-	{
-		this->fp_rate = fp_rate;
-		bits = qf::false_positive_rate_to_remainder_bits(fp_rate);
-	}
+    void set_fp_rate(double fp_rate)
+    {
+        this->fp_rate = fp_rate;
+        bits          = qf::false_positive_rate_to_remainder_bits(fp_rate);
+    }
 
-	void set_fp_rate_percent(double fp_rate_percent)
-	{
-		set_fp_rate(fp_rate_percent / 100);
-	}
+    void set_fp_rate_percent(double fp_rate_percent)
+    {
+        set_fp_rate(fp_rate_percent / 100);
+    }
 };
 
 struct fill_benchmark_config : public basic_benchmark_config
 {
-	size_t test_size = 200000;
-	size_t max_fill = 80;
+    size_t test_size = 200000;
+    size_t max_fill  = 80;
 };
 
 struct progression_benchmark_config : public basic_benchmark_config
 {
-	size_t sample_count = 20;
+    size_t sample_count = 20;
 };
 
 
-template<class FilterType>
+template <class FilterType>
 FilterType construct_quotient_filter(size_t remainder_bits, size_t capacity)
 {
-	if constexpr (FilterType::is_templated)
-        return FilterType{ capacity };
+    if constexpr (FilterType::is_templated)
+        return FilterType{capacity};
     else
-        return FilterType{ capacity, remainder_bits };
+        return FilterType{capacity, remainder_bits};
 }
 
-template<class FilterType>
-FilterType construct_quotient_filter(size_t remainder_bits, size_t capacity, size_t min_capacity, double fp_rate)
+template <class FilterType>
+FilterType construct_quotient_filter(size_t remainder_bits, size_t capacity,
+                                     size_t min_capacity, double fp_rate)
 {
-	if constexpr      (  FilterType::is_dynamic  )
-	{
-		return FilterType{ fp_rate, min_capacity };
-	}
-	else if constexpr (  FilterType::is_growing  )
-	{
-		return FilterType{ min_capacity, remainder_bits };
-	}
-    else if constexpr (  FilterType::is_templated  )
-	{
-		return FilterType{ capacity };
-	}
-    else if constexpr (! FilterType::is_templated  )
-	{
-		return FilterType{ capacity, remainder_bits };
-	}
+    if constexpr (FilterType::is_dynamic)
+    {
+        return FilterType{fp_rate, min_capacity};
+    }
+    else if constexpr (FilterType::is_growing)
+    {
+        return FilterType{min_capacity, remainder_bits};
+    }
+    else if constexpr (FilterType::is_templated)
+    {
+        return FilterType{capacity};
+    }
+    else if constexpr (!FilterType::is_templated)
+    {
+        return FilterType{capacity, remainder_bits};
+    }
 
-	return {};
+    return {};
 }
 
-template<class FilterType>
+template <class FilterType>
 FilterType construct_quotient_filter(const basic_benchmark_config& config)
 {
-	return construct_quotient_filter<FilterType>(config.bits, config.cap, config.min_cap, config.fp_rate);
+    return construct_quotient_filter<FilterType>(
+        config.bits, config.cap, config.min_cap, config.fp_rate);
 }
